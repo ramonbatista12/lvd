@@ -1,0 +1,506 @@
+package org.example.project.componentesComponiveis.Paineis.componentesRegistroDeMaquinas
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import lanvanderia.composeapp.generated.resources.Res
+import lanvanderia.composeapp.generated.resources.chronic_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
+import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
+import lanvanderia.composeapp.generated.resources.edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
+import org.example.project.componentesComponiveis.IconButtonRetorno
+import org.jetbrains.compose.resources.painterResource
+import kotlin.random.Random
+
+
+@Composable
+fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier,larguraDaTela: Dp,telasDoPainel: MutableState<PaginasDoPainel>){
+    val  editando = remember { mutableStateOf(false) }
+    Column(modifier= modifier.fillMaxWidth().fillMaxHeight().padding(start = 30.dp, top = 4.dp)) {
+        IconButtonRetorno({
+            telasDoPainel.value= PaginasDoPainel.ListaDeRegistros
+        })
+        Spacer(modifier.padding(4.dp))
+        ColetarDados(Modifier.padding(start = 4.dp),editando)
+        Row (modifier = Modifier.padding(bottom = 5.dp, start = 5.dp)){
+            //  RegistroDeMaquinas(Modifier.padding(10.dp))
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),100,larguraDaTela,editando)
+            }
+        }
+
+
+
+    }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ColetarDados(modifier: Modifier= Modifier, editando: MutableState<Boolean>){
+    val estadoTextiFildPeso=rememberTextFieldState()
+    val estadoTextiFildProcesso=rememberTextFieldState()
+    val estadoTextiFildCodigoOperador=rememberTextFieldState()
+    val estadoTextiFildMAquina=rememberTextFieldState()
+    val estadoTipoDeroupa=rememberTextFieldState()
+    val focoTipoDeroupa=remember{ MutableInteractionSource() }
+    val opcoesTipoDeroupaEstaAberta=remember { mutableStateOf(false) }
+    val opcoesDeMAquinas=remember { mutableStateOf(false) }
+    val opcoesDeProcesso=remember { mutableStateOf(false) }
+    Column(modifier=modifier) {
+        FlowRow(){
+            ExposedDropdownMenuBox(expanded = opcoesDeMAquinas.value, onExpandedChange = {
+                opcoesDeMAquinas.value=!opcoesDeMAquinas.value
+            }){
+                OutlinedTextField(state = estadoTextiFildMAquina, label = {Text("Maquina")})
+                ExposedDropdownMenu(expanded = opcoesDeMAquinas.value, onDismissRequest = {opcoesDeMAquinas.value=!opcoesDeMAquinas.value}){
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Maquina 1")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Maquina 2")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Maquina 3")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Maquina 4")
+
+                    }
+                }
+            }
+
+            Spacer(Modifier.padding(10.dp))
+            OutlinedTextField(state = estadoTextiFildPeso, label = {Text("Digite o Peso")})
+            Spacer(Modifier.padding(10.dp))
+            ExposedDropdownMenuBox(expanded = opcoesDeProcesso.value,{opcoesDeProcesso.value=!opcoesDeProcesso.value}){
+                OutlinedTextField(state = estadoTextiFildProcesso, label = {Text("Digite o Processo")})
+                ExposedDropdownMenu(expanded = opcoesDeProcesso.value,{opcoesDeProcesso.value=!opcoesDeProcesso.value}){
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Campo pesado processo 1")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Relave de roupas  2")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Lencoes pesados processo  3")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Roupas Leves processo 4")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Cobertore processo 5")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Panos de chao processo 6")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Fibras processo 7")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Enchague processo 8")
+
+                    }
+                }
+            }
+
+            Spacer(Modifier.padding(10.dp))
+            OutlinedTextField(state = estadoTextiFildCodigoOperador, label = {Text("Digite o Codigo operador")})
+            Spacer(Modifier.padding(10.dp))
+
+            ExposedDropdownMenuBox(expanded = opcoesTipoDeroupaEstaAberta.value,
+                                   onExpandedChange = {opcoesTipoDeroupaEstaAberta.value=!opcoesTipoDeroupaEstaAberta.value}){
+                OutlinedTextField(state = estadoTextiFildCodigoOperador, label = {Text("Tipo De Roupa")})
+                ExposedDropdownMenu(expanded = opcoesTipoDeroupaEstaAberta.value,{opcoesTipoDeroupaEstaAberta.value=!opcoesTipoDeroupaEstaAberta.value}){
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("FIbras")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Campo Cirugirco")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Conjunto")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Cobertor")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Pano de Chao")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Jales")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("Parceiros votuporanga")
+
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("FIbras Parceiros votuporanga")
+
+                    }
+                }
+            }
+            Spacer(Modifier.padding(10.dp))
+            AnimatedVisibility(visible = editando.value){
+
+                    OutlinedTextField(state = estadoTextiFildCodigoOperador, label = {Text("Digite a Hora de entrada")})
+            }
+            Spacer(Modifier.padding(10.dp))
+            AnimatedVisibility(visible = editando.value){
+
+                    OutlinedTextField(state = estadoTextiFildCodigoOperador, label = {Text("Digite a Hora de saida")})
+        }
+
+
+
+
+        }
+        Button({
+            if(editando.value) editando.value=false
+        }){
+
+                AnimatedVisibility(visible = editando.value){Text("Salvar edicao")}
+            AnimatedVisibility(visible = !editando.value) {Text("Adicionar Registro ")}
+
+        }
+    }
+}
+
+
+
+@Composable
+fun OpcoesPainelRegistroDeMaquinas(
+    modifier: Modifier,
+    acaoDeVoltar: () -> Unit,
+
+    ) {
+    val scop =rememberCoroutineScope()
+    val clicado= remember { mutableStateOf<OpcoesDeRegistroDeMAquinas?>(null) }
+    FlowRow (modifier) {
+        IconButtonRetorno(acaoDeVoltar=acaoDeVoltar)
+        OpcoesDeRegistroDeMAquinas.Companion.listaDeOpcoes.forEach {
+            Spacer(Modifier.padding(3.dp))
+            OutlinedButton(onClick = {
+                scop.launch {
+                    clicado.value=it
+                }
+            }){
+                Text("${it?.titulo}")
+            }
+        }
+    }
+}
+
+@Composable
+fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,editando: MutableState<Boolean>){
+   AnimatedVisibility(visible = larguraDaTela>1015.dp){
+    LazyColumn(modifier.border(width = if(larguraDaTela>1015.dp) 1.dp else 0.dp, color = Color.LightGray, shape = RoundedCornerShape(5.dp))) {
+        stickyHeader {
+
+            CabesalhoDaListaDeMaquinas(larguraDaTela)
+        }
+        items(count = cont){
+
+
+            ItemDaListaDeMaquinas(6,larguraDaTela,editando)
+        }
+
+    }}
+    AnimatedVisibility(visible = larguraDaTela<1015.dp){
+
+
+    LazyColumn(modifier) {
+        items(cont){
+            ItemDaListaCompacto(editando)
+        }
+    }
+    }
+}
+
+@Composable
+fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,editando: MutableState<Boolean>) {
+    val finalizado =remember { mutableStateOf(false) }
+    val numeroAleatoria = Random.nextInt(-1,1)
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        Spacer(Modifier.padding(10.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.padding(3.dp))
+        Row(modifier = Modifier.padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("1", modifier = Modifier.width(150.dp))
+            Spacer(Modifier.padding(3.dp))
+            Text("5", modifier = Modifier.widthIn(150.dp))
+            Spacer(Modifier.padding(3.dp))
+            AnimatedVisibility(largura>=1330.dp){
+                Text("105,5", modifier = Modifier.widthIn(150.dp))
+                Spacer(Modifier.padding(3.dp))}
+            Text("10:00", modifier = Modifier.widthIn(150.dp))
+            Spacer(Modifier.padding(3.dp))
+            AnimatedVisibility(visible = largura>1439.dp){
+                Text("micro fibra parceiros votuporanga", modifier = Modifier.width(150.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.padding(3.dp))
+            }
+
+            AnimatedVisibility(largura>=1330.dp){
+                Text("6000", modifier = Modifier.widthIn(150.dp))
+                Spacer(Modifier.padding(3.dp))
+            }
+            EstadoDamaquna(finalizado.value)
+            Spacer(Modifier.padding(3.dp))
+            FlowRow(){
+                AnimatedVisibility(visible = !finalizado.value){
+                    OutlinedButton({
+                        finalizado.value=!finalizado.value
+                    }){
+                        Icon(
+                            painterResource(Res.drawable.chronic_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24)
+                            ,"Exclui", modifier = Modifier.size(20.dp))
+                    }}
+                Spacer(Modifier.padding(3.dp))
+                OutlinedButton({
+                    editando.value=true
+                }){
+                    Icon(
+                        painterResource(Res.drawable.edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24)
+                        ,"editar", modifier = Modifier.size(20.dp))
+                }
+
+                Spacer(Modifier.padding(3.dp))
+                OutlinedButton({}){
+                    Icon(
+                        painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24)
+                        ,"Exclui", modifier = Modifier.size(20.dp))
+                }
+
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun ItemDaListaCompacto(editando: MutableState<Boolean>) {
+    val finalizado = remember { mutableStateOf(false) }
+    val numeroAleatoria = Random.nextInt(-1, 1)
+    OutlinedCard(modifier = Modifier.padding(top = 20.dp).height(190.dp)) {
+        Box(Modifier.fillMaxSize()) {
+            Box(
+                Modifier.fillMaxWidth().height(40.dp)
+                    .background(color = if (finalizado.value) Color.Green else Color.Red)
+                    .clip(RoundedCornerShape(topStart = 10.dp, bottomEnd = 10.dp))
+            ) {
+             Row(modifier = Modifier.align(Alignment.Center)) {
+                 AnimatedVisibility(
+                     visible = !finalizado.value,) {
+                     Text(text = "Lavando", color = Color.White)
+                 }
+                 AnimatedVisibility(
+                         visible = finalizado.value,
+
+                 ) {
+                 Text(text = "Finalizado as 11:00", color = Color.White)
+             }
+             }
+
+
+
+
+            }
+
+            Column(Modifier.align(Alignment.CenterStart).padding(start = 10.dp)) {
+                Row {
+                    Text("Maquina",)
+                    Spacer(Modifier.padding(end = 30.dp))
+                    Text("1", )
+                    Spacer(Modifier.padding(end = 30.dp))
+                    Text("Processo :")
+                    Spacer(Modifier.padding(end = 3.dp))
+                     Text("5", modifier = Modifier)
+                    Spacer(Modifier.padding(end = 30.dp))
+                    Text("Peso :")
+                    Spacer(Modifier.padding(end = 3.dp))
+                    Text("105,0", modifier = Modifier)
+                    Spacer(Modifier.padding(end = 30.dp))
+                    Text("Roupa :")
+                    Spacer(Modifier.padding(end = 3.dp))
+                    Text("Campo Cirugirco", modifier = Modifier)
+
+
+                }
+                Spacer(Modifier.padding(top = 10.dp))
+                Row {
+                    Text("Hora entrada :")
+                    Spacer(Modifier.padding(end = 3.dp))
+                    Text("10:00", )
+                    Spacer(modifier = Modifier.padding(end = 30.dp))
+                    Text("Codigo operador :")
+                    Spacer(Modifier.padding(end = 30.dp))
+                    Text("6000",)
+                }
+
+
+            }
+
+            Row(modifier = Modifier.fillMaxWidth().align(Alignment.BottomEnd).padding(bottom = 5.dp, end = 5.dp), horizontalArrangement = Arrangement.End) {
+                AnimatedVisibility(visible = !finalizado.value) {
+                    OutlinedButton({
+                        finalizado.value = !finalizado.value
+                    }) {
+                        Icon(
+                            painterResource(Res.drawable.chronic_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
+                            "Exclui",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(Modifier.padding(3.dp))
+                OutlinedButton({
+                    editando.value = true
+                }) {
+                    Icon(
+                        painterResource(Res.drawable.edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
+                        "editar",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(Modifier.padding(3.dp))
+                OutlinedButton({}) {
+                    Icon(
+                        painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
+                        "Exclui",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+        }
+
+
+    }
+}
+
+
+
+@Composable
+fun EstadoDamaquna(boolean: Boolean){
+    AnimatedVisibility(visible = !boolean)
+    {
+
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.widthIn(150.dp)) {
+            Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.Red))
+            Spacer(Modifier.padding(3.dp))
+            Text("Lavando")
+        }
+    }
+    AnimatedVisibility(boolean){
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.widthIn(150.dp)) {
+            Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.Green))
+            Spacer(Modifier.padding(3.dp))
+            Text("Finalizado as 11:00")
+        }
+    }
+
+}
+
+@Composable
+fun CabesalhoDaListaDeMaquinas(maxwith: Dp) {
+
+    val listaDeCabesalho1 =  listOf<String>("Maquina","Processo","Peso","Hr inicio","Cod operador","Estado")
+    val listaDeCabesalho2= listOf<String>("Maquina","Processo","Hr inicio","Estado")
+    val listaDeCabesalho3= listOf<String>("Maquina","Processo","Peso","Hr inicio","Cod operador","Estado")
+
+    OutlinedCard(shape = RoundedCornerShape(size = 2.dp), modifier = Modifier.padding(bottom = 10.dp)) {
+
+
+        Row(modifier = Modifier.padding(start = 10.dp, bottom = 10.dp).height(70.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            ItemDeCabesalho("Maquina", Modifier.widthIn(150.dp))
+            Spacer(modifier = Modifier.padding(3.dp))
+            ItemDeCabesalho("Processo", Modifier.widthIn(150.dp))
+            Spacer(modifier = Modifier.padding(3.dp))
+            AnimatedVisibility(visible = maxwith>=1330.dp) {
+                ItemDeCabesalho("Peso", Modifier.widthIn(150.dp))
+                Spacer(modifier = Modifier.padding(3.dp))
+            }
+            ItemDeCabesalho("Hr inicio", Modifier.widthIn(150.dp))
+            Spacer(modifier = Modifier.padding(3.dp))
+            AnimatedVisibility(visible = maxwith>1439.dp){
+                ItemDeCabesalho("Roupa", Modifier.widthIn(150.dp))
+            }
+
+            Spacer(modifier = Modifier.padding(3.dp))
+            AnimatedVisibility(visible = maxwith>=1330.dp)  {
+                ItemDeCabesalho("Cod operador", Modifier.widthIn(150.dp))
+                Spacer(modifier = Modifier.padding(3.dp))
+            }
+            ItemDeCabesalho("Estado", Modifier.widthIn(150.dp))
+            Spacer(modifier = Modifier.padding(3.dp))
+
+        }
+    }
+}
+
+@Composable
+fun ItemDeCabesalho(titulo: String,modifier: Modifier= Modifier){
+    Text(text = titulo, color = Color.Black, fontSize = 20.sp,modifier=modifier)
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="500"
+   height="500"
+   viewBox="0 0 132.29166 132.29167"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   sodipodi:docname="Maximisar.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.69219276"
+     inkscape:cx="396.56583"
+     inkscape:cy="558.37047"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch1"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="m 49.094787,30.196736 c -15.975104,0 -28.836087,8.012584 -28.836087,17.965312 v 36.694917 c 0,9.952735 12.860983,17.965315 28.836087,17.965315 h 38.652717 c 15.975096,0 28.835256,-8.01258 28.835256,-17.965315 V 48.162048 c 0,-9.952728 -12.86016,-17.965312 -28.835256,-17.965312 z m 0.789644,4.640544 h 37.334713 c 13.620866,0 24.586766,6.831402 24.586766,15.317411 v 31.287496 c 0,8.486008 -10.9659,15.317933 -24.586766,15.317933 H 49.884431 c -13.620878,0 -24.586777,-6.831925 -24.586777,-15.317933 V 50.154691 c 0,-8.486009 10.965899,-15.317411 24.586777,-15.317411 z"
+       style="fill-opacity:0.989733;stroke-width:0.335207"
+       id="path3" />
+  </g>
+</svg>

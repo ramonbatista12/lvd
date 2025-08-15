@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="500"
+   height="500"
+   viewBox="0 0 132.29166 132.29167"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   sodipodi:docname="IconeMAquinaDeLavar2.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.5861561"
+     inkscape:cx="198.90855"
+     inkscape:cy="267.62814"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect4"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,4.7462048,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,5.2628489,0,1 | F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 | F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 | F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+  </defs>
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="M 30.049474,31.735241 V 105.12508 H 100.76402 V 31.735241 Z M 66.187837,49.700036 A 24.417917,22.361006 0 0 1 90.605984,72.061462 24.417917,22.361006 0 0 1 66.187837,94.422366 24.417917,22.361006 0 0 1 41.770206,72.061462 24.417917,22.361006 0 0 1 66.187837,49.700036 Z"
+       style="fill:#0b0b0b;stroke:#000000;stroke-width:0.264998;stroke-linejoin:round;paint-order:stroke fill markers"
+       id="path16" />
+    <path
+       d="m 30.099654,25.952917 0.126408,4.635397 h 70.596208 l 0.0776,-4.579256 a 5.1408771,5.1408771 45.299369 0 0 -5.173548,-5.227893 l -61.009965,0.396469 a 4.6486587,4.6486587 134.0328 0 0 -4.616723,4.775283 z M 41.819153,22.716443 H 57.65953 v 1.851566 H 41.819153 Z m -3.835425,0.226859 c 1.285369,-8e-5 2.327434,0.94111 2.327507,2.102198 -7.3e-5,1.161087 -1.042138,2.102277 -2.327507,2.102197 -1.285369,8e-5 -2.327433,-0.94111 -2.327506,-2.102197 7.3e-5,-1.161087 1.042137,-2.102278 2.327506,-2.102198 z m 3.571875,2.566252 H 57.39598 v 1.851567 H 41.555603 Z"
+       style="fill:#0b0b0b;stroke:#000000;stroke-width:0.264998;stroke-linejoin:round;paint-order:stroke fill markers"
+       id="path4"
+       inkscape:path-effect="#path-effect4"
+       inkscape:original-d="m 29.970272,21.208476 0.25579,9.379838 h 70.596208 l 0.16681,-9.841349 z m 11.848881,1.507967 H 57.65953 v 1.851566 H 41.819153 Z m -3.835425,0.226859 c 1.285369,-8e-5 2.327434,0.94111 2.327507,2.102198 -7.3e-5,1.161087 -1.042138,2.102277 -2.327507,2.102197 -1.285369,8e-5 -2.327433,-0.94111 -2.327506,-2.102197 7.3e-5,-1.161087 1.042137,-2.102278 2.327506,-2.102198 z m 3.571875,2.566252 H 57.39598 v 1.851567 H 41.555603 Z"
+       sodipodi:nodetypes="cccccccccccccccccccc" />
+    <ellipse
+       style="fill:#000000;stroke:#000000;stroke-width:0.26501;stroke-linejoin:round;paint-order:stroke fill markers"
+       id="path17"
+       cx="66.247437"
+       cy="70.955421"
+       rx="19.545055"
+       ry="18.51457"
+       transform="matrix(0.99991939,0.01269686,0,1,0,0)" />
+  </g>
+</svg>
