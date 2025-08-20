@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -35,7 +36,9 @@ import androidx.compose.material.Text
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,13 +56,17 @@ import lanvanderia.composeapp.generated.resources.chronic_24dp_E3E3E3_FILL0_wght
 import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import org.example.project.componentesComponiveis.IconButtonRetorno
+import org.example.project.repositorio.EntidadeRegistroDeMaquinas
+import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 import org.jetbrains.compose.resources.painterResource
 import kotlin.random.Random
 
 
 @Composable
-fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier,larguraDaTela: Dp,telasDoPainel: MutableState<PaginasDoPainel>){
+ fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier, larguraDaTela: Dp, telasDoPainel: MutableState<PaginasDoPainel>, vm: ViewModelRegistroDeMaquinas){
     val  editando = remember { mutableStateOf(false) }
+    val fluxoDeMaquinas = vm.fluxoDeregistroDeDados(206).collectAsState(emptyList())
+
     Column(modifier= modifier.fillMaxWidth().fillMaxHeight().padding(start = 30.dp, top = 4.dp)) {
         IconButtonRetorno({
             telasDoPainel.value= PaginasDoPainel.ListaDeRegistros
@@ -70,7 +77,7 @@ fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier,larguraDaTela:
             //  RegistroDeMaquinas(Modifier.padding(10.dp))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),100,larguraDaTela,editando)
+                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),100,larguraDaTela,editando,fluxoDeMaquinas.value)
             }
         }
 
@@ -253,17 +260,16 @@ fun OpcoesPainelRegistroDeMaquinas(
 }
 
 @Composable
-fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,editando: MutableState<Boolean>){
+fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,editando: MutableState<Boolean>,listaDeMaquinas: List<EntidadeRegistroDeMaquinas>){
    AnimatedVisibility(visible = larguraDaTela>1015.dp){
     LazyColumn(modifier.border(width = if(larguraDaTela>1015.dp) 1.dp else 0.dp, color = Color.LightGray, shape = RoundedCornerShape(5.dp))) {
         stickyHeader {
 
             CabesalhoDaListaDeMaquinas(larguraDaTela)
         }
-        items(count = cont){
-
-
-            ItemDaListaDeMaquinas(6,larguraDaTela,editando)
+        items(items = listaDeMaquinas){
+         if(it!=null)
+        ItemDaListaDeMaquinas(6,larguraDaTela,editando,it)
         }
 
     }}
@@ -279,7 +285,7 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,ed
 }
 
 @Composable
-fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,editando: MutableState<Boolean>) {
+fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,editando: MutableState<Boolean>,e: EntidadeRegistroDeMaquinas) {
     val finalizado =remember { mutableStateOf(false) }
     val numeroAleatoria = Random.nextInt(-1,1)
     Column(modifier = Modifier.padding(top = 20.dp)) {
@@ -287,22 +293,22 @@ fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,editando: MutableState
         HorizontalDivider()
         Spacer(modifier = Modifier.padding(3.dp))
         Row(modifier = Modifier.padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("1", modifier = Modifier.width(150.dp))
+            Text("${e.id.value}", modifier = Modifier.width(150.dp))
             Spacer(Modifier.padding(3.dp))
-            Text("5", modifier = Modifier.widthIn(150.dp))
+            Text("${e.idProcesso}", modifier = Modifier.widthIn(150.dp))
             Spacer(Modifier.padding(3.dp))
             AnimatedVisibility(largura>=1330.dp){
-                Text("105,5", modifier = Modifier.widthIn(150.dp))
+                Text("${e.peso}", modifier = Modifier.widthIn(150.dp))
                 Spacer(Modifier.padding(3.dp))}
             Text("10:00", modifier = Modifier.widthIn(150.dp))
             Spacer(Modifier.padding(3.dp))
             AnimatedVisibility(visible = largura>1439.dp){
-                Text("micro fibra parceiros votuporanga", modifier = Modifier.width(150.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text("", modifier = Modifier.width(150.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.padding(3.dp))
             }
 
             AnimatedVisibility(largura>=1330.dp){
-                Text("6000", modifier = Modifier.widthIn(150.dp))
+                Text("${e.codOperador}", modifier = Modifier.widthIn(150.dp))
                 Spacer(Modifier.padding(3.dp))
             }
             EstadoDamaquna(finalizado.value)

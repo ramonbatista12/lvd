@@ -41,12 +41,13 @@ import lanvanderia.composeapp.generated.resources.Res
 import lanvanderia.composeapp.generated.resources.compose_multiplatform
 import org.example.project.componentesComponiveis.BarraLateralPermanente
 import org.example.project.repositorio.Login
+import org.example.project.repositorio.Repositorio
 
 import org.example.project.viewModel.ViewModelPrincipal
 
 @Composable
 @Preview
-fun App( viewModelPrincipal: ViewModelPrincipal) {
+fun App( viewModelPrincipal: ViewModelPrincipal,repositorio: Repositorio) {
     val estadoLogin=viewModelPrincipal.fluxoDeLogin.collectAsState()
     MaterialTheme {
 
@@ -78,7 +79,9 @@ fun App( viewModelPrincipal: ViewModelPrincipal) {
                        Navigraf(navHost = navHostController,
                                 modifier = Modifier.fillMaxSize(),
                                 estado=estadoLogin,
-                                viewModelPrincipal)
+                               viewModelPrincipal =  viewModelPrincipal,
+                               repositorio= repositorio
+                                )
                    }
                }
 

@@ -16,6 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,19 +40,14 @@ import java.awt.Color
 import lanvanderia.composeapp.generated.resources.Res
 import org.example.project.repositorio.Conecao
 import org.example.project.repositorio.Login
+import org.example.project.repositorio.Repositorio
 
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 fun main() = application {
     val  windowState =rememberWindowState( size = DpSize(1080.dp,700.dp))
     val scop = rememberCoroutineScope()
-    scop.launch {
 
-        Conecao.selectUsers()
-        Conecao.getUserById(1)
-        val logim: Login = Conecao.usuariobyName("0003","123456789")
-        System.out.println("login obtido ${logim}")
-    }
 
 
     Window(
@@ -76,7 +72,7 @@ fun main() = application {
 
        val viewModel: ViewModelPrincipal = viewModel()
 
-            App(viewModel)
+            App(viewModel, Repositorio)
         }
 
 

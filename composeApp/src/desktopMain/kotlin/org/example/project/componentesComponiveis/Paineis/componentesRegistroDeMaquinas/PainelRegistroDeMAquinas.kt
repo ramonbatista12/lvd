@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.unit.dp
+import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 
 @Composable
 fun PainelRegistroDeMAquinas(modifier: Modifier= Modifier,
-                             acaoDeVoltar:()-> Unit={}){
+                             acaoDeVoltar:()-> Unit={},
+                             vm: ViewModelRegistroDeMaquinas){
     val  coroutineScope = rememberCoroutineScope()
     val scroll = rememberScrollState(0)
     val telasInternas =remember { mutableStateOf<PaginasDoPainel>(PaginasDoPainel.ListaDeRegistros) }
@@ -50,7 +52,7 @@ fun PainelRegistroDeMAquinas(modifier: Modifier= Modifier,
               AnimatedVisibility(visible = listaderegistrosEstaVisivel.value ,modifier= Modifier.align(Alignment.CenterStart).fillMaxWidth()){
                   ApresentacaoListaDeRegistros(
                       modifier = Modifier.align(Alignment.CenterStart).fillMaxWidth()
-                          .padding(start = 30.dp, top = 3.dp), telasInternas, largura = maxWidth
+                          .padding(start = 30.dp, top = 3.dp), telasInternas, largura = maxWidth,vm
                   )
               }
 
@@ -70,7 +72,10 @@ fun PainelRegistroDeMAquinas(modifier: Modifier= Modifier,
               AnimatedVisibility(visible = apresentacaoPorRegistroEsAberta.value){
                   ApresentacaoDoRegistroDeMAquinas(
                       modifier = Modifier.align(Alignment.CenterStart).fillMaxWidth()
-                          .padding(start = 30.dp, top = 3.dp), larguraDaTela = maxWidth, telasInternas
+                                         .padding(start = 30.dp, top = 3.dp),
+                      larguraDaTela = maxWidth,
+                      telasDoPainel = telasInternas,
+                      vm
                   )
               }
 

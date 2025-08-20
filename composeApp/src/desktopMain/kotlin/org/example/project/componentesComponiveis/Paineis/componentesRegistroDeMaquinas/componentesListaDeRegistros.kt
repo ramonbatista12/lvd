@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -31,7 +32,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,15 +48,25 @@ import lanvanderia.composeapp.generated.resources.add_circle_24dp_E3E3E3_FILL0_w
 import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
+import org.example.project.repositorio.EntidadeDataRegistro
+import org.example.project.repositorio.RespostaDeContagemDeMaquinas
+import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 import org.jetbrains.compose.resources.painterResource
 import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier, telasInterna: MutableState<PaginasDoPainel>, largura: Dp){
+fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
+                                 telasInterna: MutableState<PaginasDoPainel>,
+                                 largura: Dp,
+                                 vm: ViewModelRegistroDeMaquinas){
 
     val  dropdownMenuState =remember{ mutableStateOf(false) }
+    val fluxoDeDatas =vm.fluxoDeDatasDeRegistro.collectAsState()
+
+
+
     Column(modifier=modifier.fillMaxSize().padding(bottom = 20.dp, start = 20.dp)) {
 
 
@@ -84,25 +97,50 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier, telasInterna: Mu
             stickyHeader {
                 CabesalhoRegistros()
             }
-            items(count = 20){
-                ItemRegistro({
+            items(items= fluxoDeDatas.value){
+                val visivel =remember { mutableStateOf(true) }
+                if(it!=null)
+
+                ItemRegistro(onClick = {
+                    System.out.println()
                     telasInterna.value= PaginasDoPainel.VisualizacaoDoRegidtro(0)
-                })
+                }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id.value)},
+                    data = it, acaoDeApagarUmRegistro = {
+                        vm.apagarUmRegistroDeDatas(it,
+                            calbackDeEscluasao = {
+                                visivel.value=!it
+
+                            })
+                    }, acaoChecagemConclusaoDasMaquinas = {vm.contarQuantidadeDeMaquinasAtivas(it).toInt()})
+
             }
         }}
         AnimatedVisibility(visible = largura<1000.dp,modifier= Modifier.align(Alignment.CenterHorizontally)){
             LazyColumn(Modifier){
-                items(count = 20){
-                   ItemRegistroCompat({
+                items(items= fluxoDeDatas.value){
+
+                    val visivel =remember { mutableStateOf(true) }
+                    if(it!=null)
+                 ItemRegistroCompat(acao = {
                        telasInterna.value= PaginasDoPainel.VisualizacaoDoRegidtro(0)
-                   })
-                }
+                   }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id.value)},
+                       data = it,
+                       acaoDeApagarUmRegistro = {
+                           vm.apagarUmRegistroDeDatas(it,{
+
+                               visivel.value=!it
+                           })
+
+                       },
+                     acoaDeContagemDeMaquinasativas = { vm.contarQuantidadeDeMaquinasAtivas(it).toInt()})}
+
+            }
             }
         }
     }
 
 
-}
+
 
 @Composable
 fun BaraDePesquisa(modifier: Modifier= Modifier){
@@ -182,7 +220,19 @@ fun CabesalhoRegistros(){
 }
 
 @Composable
-fun ItemRegistro(onClick:()-> Unit){
+fun ItemRegistro(onClick: () -> Unit,
+                 acaoDeContagem:suspend () -> RespostaDeContagemDeMaquinas,
+                 data: EntidadeDataRegistro,
+                 acaoDeApagarUmRegistro: (Int) -> Unit,
+                 acaoChecagemConclusaoDasMaquinas:suspend (Int)->Int){
+    val contagem =remember { mutableStateOf<RespostaDeContagemDeMaquinas>(RespostaDeContagemDeMaquinas.Load) }
+    val maquinasConcluidas =remember { mutableStateOf(true) }
+    LaunchedEffect(Unit){
+        contagem.value =acaoDeContagem()
+    }
+    LaunchedEffect(Unit){
+        maquinasConcluidas.value =if (acaoChecagemConclusaoDasMaquinas(data.id.value) >0) false else true
+    }
     Column (Modifier.width(900.dp).clickable(onClick=onClick)) {
         HorizontalDivider()
         Spacer(Modifier.padding(3.dp))
@@ -191,20 +241,20 @@ fun ItemRegistro(onClick:()-> Unit){
 
             Row(Modifier.width(150.dp)) {
 
-                Text("100000")
+                Text("${data.id}")
 
             }
 
             Row(Modifier.width(150.dp)) {
 
-                Text("01/01/2000")
+                Text("${data.data}")
             }
             Spacer(Modifier.padding(3.dp))
             Row(Modifier.width(150.dp)) {
-                Text("50")}
+                Text("${contagem.value.toString()}")}
             Spacer(Modifier.padding(3.dp))
-            EstadoRegistro()
-            OutlinedIconButton({}){
+            EstadoRegistro(comcluidas = maquinasConcluidas.value)
+            OutlinedIconButton({acaoDeApagarUmRegistro(data.id.value)}){
                 Icon(painter = painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
                     contentDescription = "apagar registro",
                     Modifier.size(20.dp))
@@ -217,8 +267,19 @@ fun ItemRegistro(onClick:()-> Unit){
 }
 
 @Composable
-fun ItemRegistroCompat(acao:()-> Unit){
-    val aleatorio =remember { Random.nextInt(1,3) }
+fun ItemRegistroCompat(acao:()-> Unit,
+                       acaoDeContagem: suspend () -> RespostaDeContagemDeMaquinas,
+                       data: EntidadeDataRegistro,
+                       acaoDeApagarUmRegistro:(Int)-> Unit,
+                       acoaDeContagemDeMaquinasativas:suspend (Int)->Int){
+    val maquinasConcluidas = remember { mutableStateOf(false) }
+    val contagenDeMaquinas = remember { mutableStateOf<RespostaDeContagemDeMaquinas>(RespostaDeContagemDeMaquinas.Load) }
+    LaunchedEffect(Unit){
+       contagenDeMaquinas.value= acaoDeContagem()
+    }
+    LaunchedEffect(Unit){
+        maquinasConcluidas.value = if(acoaDeContagemDeMaquinasativas(data.id.value)>=0)false else true
+    }
     OutlinedCard(modifier = Modifier.width(600.dp)
                                     .height(190.dp)
                                     .padding(10.dp).clickable(onClick = acao)) {
@@ -226,9 +287,9 @@ fun ItemRegistroCompat(acao:()-> Unit){
             Box(Modifier.align(Alignment.TopCenter)
                         .fillMaxWidth().height(30.dp)
                         .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 5.dp))
-                        .background(color = if(aleatorio==1)Color.Red else Color.Green)){
+                        .background(color = if(maquinasConcluidas.value)Color.Red else Color.Green)){
 
-                       if(aleatorio==1) Text(text = "Existem maquinas pendentes ", color = Color.White,
+                       if(maquinasConcluidas.value) Text(text = "Existem maquinas pendentes ", color = Color.White,
                                             modifier = Modifier.align(Alignment.Center))
                        else Text(text = "Todas as maquinaas foram concluidas", color = Color.White,
                                  modifier = Modifier.align(Alignment.Center)  )
@@ -238,24 +299,24 @@ fun ItemRegistroCompat(acao:()-> Unit){
                 Row {
                     Text("Id :")
                     Spacer(Modifier.padding(3.dp))
-                    Text("100000")
+                    Text("${data.id}")
                     Spacer(Modifier.padding(end = 30.dp))}
                 Spacer(Modifier.padding(5.dp))
                 Row {
                     Text(text = "Data :")
                     Spacer(modifier = Modifier.padding( 3.dp))
-                    Text("10/10/2020")
+                    Text("${data.data}")
                 }
                 Spacer(Modifier.padding(5.dp))
                 Row {
                     Text("quantidade :")
                     Spacer(Modifier.padding(3.dp))
-                    Text("50")
+                    Text("${contagenDeMaquinas.value.toString()}")
 
                 }
             }
             Row(Modifier.align(Alignment.BottomEnd).padding(end = 5.dp, bottom = 10.dp)) {
-                OutlinedIconButton({}){
+                OutlinedIconButton({acaoDeApagarUmRegistro(data.id.value)}){
                     Icon(painter = painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),""
                          , modifier = Modifier.size(20.dp))
                 }
@@ -266,11 +327,11 @@ fun ItemRegistroCompat(acao:()-> Unit){
     }
 }
 @Composable
-fun EstadoRegistro(){
+fun EstadoRegistro(comcluidas: Boolean){
     val estado = remember { mutableStateOf(Random.nextInt(1,5)) }
-    val color = if(estado.value==1) Color.Red
+    val color = if(!comcluidas) Color.Red
     else Color.Green
-    val text =if(estado.value==1) "Existem maquinas pendentes "
+    val text =if(!comcluidas)"Existem maquinas pendentes "
     else "Todas as maquinas foram comcluidas"
     Row(modifier = Modifier.width(290.dp)) {
         Box(modifier = Modifier.clip(CircleShape).size(20.dp).background(color=color))

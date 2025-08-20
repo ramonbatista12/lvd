@@ -18,3 +18,18 @@ sealed class Login(val nome:String){
     }
     override fun toString(): String =this.nome
 }
+
+
+sealed class RespostaDeContagemDeMaquinas(){
+    class Contagem(val quantidae: Int): RespostaDeContagemDeMaquinas()
+    object Load: RespostaDeContagemDeMaquinas()
+    class Erro(val mensagem : String): RespostaDeContagemDeMaquinas()
+
+    override fun toString(): String
+       =when(val r =this){
+            is Erro -> r.mensagem
+            is Contagem -> r.quantidae.toString()
+            is Load -> "Caregando"
+        }
+
+}

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +19,8 @@ import org.example.project.componentesComponiveis.Paineis.componentesRegistroDeM
 import org.example.project.componentesComponiveis.Paineis.PainelRequesicao
 import org.example.project.componentesComponiveis.Paineis.PainelSolicitacoes
 import org.example.project.repositorio.Login
+import org.example.project.repositorio.Repositorio
+import org.example.project.viewModel.FabricaViewModelRegistroDeMaquinas
 
 import org.example.project.viewModel.ViewModelPrincipal
 
@@ -25,7 +28,8 @@ import org.example.project.viewModel.ViewModelPrincipal
 fun Navigraf(navHost: NavHostController,
              modifier: Modifier=Modifier,
              estado: State<Login>,
-             viewModelPrincipal: ViewModelPrincipal){
+             viewModelPrincipal: ViewModelPrincipal,
+             repositorio: Repositorio){
     val coroutine = rememberCoroutineScope ()
     NavHost(navController = navHost, startDestination = DestinosDeNavegacao.RegistroDeMaquinas,modifier=modifier){
         composable<DestinosDeNavegacao.Requisicoes>{
@@ -47,7 +51,9 @@ fun Navigraf(navHost: NavHostController,
                 coroutine.launch {
                     navHost.popBackStack()
                 }
-            }, modifier = modifier.fillMaxSize())
+            }, modifier = modifier.fillMaxSize(),
+            vm = viewModel(factory = FabricaViewModelRegistroDeMaquinas().fabricar(repositorio))
+            )
         }
 
         composable<DestinosDeNavegacao.Gerenciamento> {

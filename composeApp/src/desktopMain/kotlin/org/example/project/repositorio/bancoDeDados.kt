@@ -1,6 +1,9 @@
 package org.example.project.repositorio
 
 
+import app.cash.paging.Pager
+import app.cash.paging.PagingConfig
+import app.cash.paging.cachedIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -11,23 +14,29 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
+import org.jetbrains.exposed.v1.core.statements.UpsertSqlExpressionBuilder.eq
 import org.jetbrains.exposed.v1.dao.Entity
 import org.jetbrains.exposed.v1.dao.EntityClass
+import org.jetbrains.exposed.v1.dao.IntEntity
+import org.jetbrains.exposed.v1.dao.IntEntityClass
 import org.jetbrains.exposed.v1.dao.load
 import org.jetbrains.exposed.v1.dao.with
 import org.jetbrains.exposed.v1.javatime.date
 import org.jetbrains.exposed.v1.javatime.time
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.concurrent.timer
 
 
 object Conecao{
-    val coroutineScope = CoroutineScope(Dispatchers.IO)
-    val conecacaoComBancoDeDados= Database.connect(url = "jdbc:mysql://localhost:3306/lvd",
+   private val coroutineScope = CoroutineScope(Dispatchers.IO)
+   private val conecacaoComBancoDeDados= Database.connect(url = "jdbc:mysql://localhost:3306/lvd",
                                                   user ="root" ,
                                                   password ="15a16b34c" ,)
+    var uimaPagngSorceDatasDeRegistroDeMaquinas: RecursoDePaginacaoDeDatasDeRegistroDeMaquinas? = null
+
     init {
         coroutineScope.launch {
             transaction {
@@ -39,11 +48,66 @@ object Conecao{
                 SchemaUtils.create(TabelaTipoDeRoupas)
                 SchemaUtils.create(TabelaProcessos)
                 SchemaUtils.create(TabelaDeRegistroDeMaquinas)
+                SchemaUtils.create(TabelaInvalidacoes)
+                exec("SET SQL_SAFE_UPDATES = 0;")
+                 val tableNames = Invalidador.tableNaes
+               coroutineScope.launch {   for (n in tableNames){
+                    criarGatinhosInsert(n)
+                    criarGatinhosUpdate(n)
+                    criarGatinhosDelete(n)
+                }
 
+               }
 
             }
+
         }
 
+    }
+    suspend fun criarGatinhosUpdate (tableName:String){
+        transaction {
+         exec("DROP TRIGGER IF EXISTS update_${tableName}")
+         exec("""
+            CREATE TRIGGER update_${tableName}
+            AFTER UPDATE ON $tableName
+            FOR EACH ROW
+            UPDATE ${TabelaInvalidacoes.tableName}
+            SET ${TabelaInvalidacoes.invalidada.name} = 1
+            WHERE ${TabelaInvalidacoes.nomeDaTabela.name} = '$tableName'
+        """.trimIndent())
+         }
+        }
+
+    suspend fun criarGatinhosDelete (tableName:String){
+        transaction {
+            exec("DROP TRIGGER IF EXISTS delete_${tableName}")
+            exec("""
+                       
+                    CREATE TRIGGER delete_${tableName}   AFTER DELETE
+                    ON ${tableName}
+                    FOR EACH ROW 
+                    UPDATE ${TabelaInvalidacoes.tableName}
+                    set ${TabelaInvalidacoes.invalidada.name} = 1
+                    WHERE ${TabelaInvalidacoes.nomeDaTabela.name}  ='${tableName}'    
+                     
+                """.trimIndent())
+        }
+    }
+
+    suspend fun criarGatinhosInsert (tableName:String){
+        transaction {
+            exec("DROP TRIGGER IF EXISTS insert_${tableName}")
+            exec("""
+                    
+                    
+                    CREATE TRIGGER insert_${tableName}   AFTER INSERT
+                    ON ${tableName} 
+                    FOR EACH ROW
+                    UPDATE ${TabelaInvalidacoes.tableName} set ${TabelaInvalidacoes.invalidada.name} = 1
+                    WHERE ${TabelaInvalidacoes.nomeDaTabela.name}  LIKE '${tableName}'    
+                        
+                """.trimIndent())
+        }
     }
 
     fun selectUsers(){
@@ -57,7 +121,6 @@ object Conecao{
             }
         }
     }
-
     fun getUserById(id:Int){
         coroutineScope.launch {
             val usuarios= coroutineScope.async {transaction {  EntidadeUsuarios.findById(1)?.load(EntidadeUsuarios::funcao)}  }.await()
@@ -77,6 +140,13 @@ object Conecao{
         }
    return Login.Erro
     }
+
+    fun fluxoDeDatas()= AdapitadorEntidadeDatasDeRegistro.fluxoPaginadoDeDatasDeRegistroDeMaquinas
+    fun fluxoDeRegistroDeDatasPorId(idData: Int)= AdapitadorEntidadeRegistroDeMaquinas.fluxoDeMaquinasProDatas(idData)
+    suspend fun contagemDeMaquinasPorIdDaData(idData: Int): Int= coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.contagemDeMaquinasPorIdDaData(idData) }.await()
+    suspend fun apagarRegistroDeDatas(idData: Int): Boolean=coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.apagarRegistroDeDatas(idData) }.await()
+    suspend fun quantidadeDeMaquinasAtivas(idData:Int): Long = coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.contagemDeComclusaoDeMaquinas(idData.toInt()) }.await()
+
 }
 
 
@@ -90,7 +160,7 @@ object TabelaUsuarios: IdTable<Int>("usuarios"){
     val funcao =integer("funcao").references(TabelaDeFuncoes.id)
     val ativo =bool("ativo")
     override val primaryKey = PrimaryKey(id)
-}
+}//
 
 object TabelaDeFuncoes: IdTable<Int>("funcoes"){
     override val id =integer("id_funcao").autoIncrement().entityId()
@@ -139,7 +209,7 @@ object TabelaDeMaquinas: IdTable<Int>("tabela_de_maquina"){
     val pesoMasimo=float("peso_masimo")
     val pesoMinimo=float("peso_minimo")
 
-}
+}//
 
 
 
@@ -150,6 +220,10 @@ object TabelaTipoDeRoupas: IdTable<Int>("tabela_tipo_de_roupas"){
     val descricao =varchar("descricao_do_tipo",200)
 
 }
+object TabelaInvalidacoes: IntIdTable("invalidacao","id_invalidacao"){
+    val nomeDaTabela=varchar("nome_da_tabela",100)
+    val invalidada =bool("invalidada")
+}
 
 class EntidadeRegistroDeMaquinas(id: EntityID<Int>): Entity<Int>(id){
     companion object : EntityClass<Int, EntidadeRegistroDeMaquinas>(TabelaDeRegistroDeMaquinas)
@@ -159,9 +233,14 @@ class EntidadeRegistroDeMaquinas(id: EntityID<Int>): Entity<Int>(id){
     var idTipoDeRoupas by TabelaDeRegistroDeMaquinas.tipoDeRoupa
     var idData by TabelaDeRegistroDeMaquinas.data
     var peso by TabelaDeRegistroDeMaquinas.peso
-    val tipo by EntidadeTipoDeRoupas referencedOn TabelaTipoDeRoupas.id
-    val processo by EntidadeTabelaProcesso referencedOn TabelaProcessos.id
-    val operador by EntidadeUsuarios referencedOn TabelaUsuarios.codigoUsuaria
+    var dataFinalizacao by TabelaDeRegistroDeMaquinas.dataFinalizacao
+    var maquina by TabelaDeRegistroDeMaquinas.maquina
+    var entrada by TabelaDeRegistroDeMaquinas.horaEntrada
+    var saida by TabelaDeRegistroDeMaquinas.horaSaida
+    var finalizada by TabelaDeRegistroDeMaquinas.finalizada
+    //val tipo by EntidadeTipoDeRoupas referencedOn TabelaTipoDeRoupas.id
+   // val processo by EntidadeTabelaProcesso referencedOn TabelaProcessos.id
+   // val operador by EntidadeUsuarios referencedOn TabelaUsuarios.codigoUsuaria
 }
 
 class EntidadeDataRegistro(id: EntityID<Int>): Entity<Int>(id){
@@ -211,4 +290,12 @@ class EntidadeFuncoes(id: EntityID<Int>): Entity<Int>(id){
     var idFuncao by TabelaDeFuncoes.id
     var nomeDaFuncao by TabelaDeFuncoes.nomeDaFuncao
     var descricao by TabelaDeFuncoes.descricaoDaFuncao
+}
+
+class EntidadeInvalidacao(id: EntityID<Int>): IntEntity(id){
+    companion object : IntEntityClass<EntidadeInvalidacao>(TabelaInvalidacoes)
+    var idInvalidacao by TabelaInvalidacoes.id
+    var nome by TabelaInvalidacoes.nomeDaTabela
+    var invalidada by TabelaInvalidacoes.invalidada
+
 }

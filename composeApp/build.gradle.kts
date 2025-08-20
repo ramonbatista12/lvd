@@ -34,6 +34,8 @@ kotlin {
             implementation("org.jetbrains.exposed:exposed-dao:1.0.0-beta-5")
             implementation("mysql:mysql-connector-java:8.0.33")
             implementation("org.jetbrains.exposed:exposed-java-time:1.0.0-beta-5")
+            implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.5.1")
+            implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.5.1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
