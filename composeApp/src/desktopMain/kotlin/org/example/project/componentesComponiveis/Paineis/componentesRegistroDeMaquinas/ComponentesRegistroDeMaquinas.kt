@@ -50,6 +50,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import lanvanderia.composeapp.generated.resources.Res
 import lanvanderia.composeapp.generated.resources.chronic_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
@@ -59,6 +62,7 @@ import org.example.project.componentesComponiveis.IconButtonRetorno
 import org.example.project.repositorio.EntidadeRegistroDeMaquinas
 import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.random.Random
 
 
@@ -66,6 +70,7 @@ import kotlin.random.Random
  fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier, larguraDaTela: Dp, telasDoPainel: MutableState<PaginasDoPainel>, vm: ViewModelRegistroDeMaquinas){
     val  editando = remember { mutableStateOf(false) }
     val fluxoDeMaquinas = vm.fluxoDeregistroDeDados(206).collectAsState(emptyList())
+    val coroutineScope =rememberCoroutineScope()
 
     Column(modifier= modifier.fillMaxWidth().fillMaxHeight().padding(start = 30.dp, top = 4.dp)) {
         IconButtonRetorno({
@@ -77,7 +82,13 @@ import kotlin.random.Random
             //  RegistroDeMaquinas(Modifier.padding(10.dp))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),100,larguraDaTela,editando,fluxoDeMaquinas.value)
+                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),
+                                 100,
+                                 larguraDaTela,
+                                 editando,
+                                fluxoDeMaquinas.value,
+                                 coroutineScope,
+                    {})
             }
         }
 
@@ -260,7 +271,12 @@ fun OpcoesPainelRegistroDeMaquinas(
 }
 
 @Composable
-fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,editando: MutableState<Boolean>,listaDeMaquinas: List<EntidadeRegistroDeMaquinas>){
+fun ListaDeRegistros(modifier: Modifier= Modifier,
+                     cont: Int,larguraDaTela: Dp,
+                     editando: MutableState<Boolean>,
+                     listaDeMaquinas: List<EntidadeRegistroDeMaquinas>,
+                     coroutineScope: CoroutineScope,
+                     acaoDeMarcarLavagemComoFinalizada:suspend (Int) -> Unit){
    AnimatedVisibility(visible = larguraDaTela>1015.dp){
     LazyColumn(modifier.border(width = if(larguraDaTela>1015.dp) 1.dp else 0.dp, color = Color.LightGray, shape = RoundedCornerShape(5.dp))) {
         stickyHeader {
@@ -269,7 +285,11 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,ed
         }
         items(items = listaDeMaquinas){
          if(it!=null)
-        ItemDaListaDeMaquinas(6,larguraDaTela,editando,it)
+        ItemDaListaDeMaquinas(6,larguraDaTela,editando,it,coroutineScope,{
+            coroutineScope.launch {
+                acaoDeMarcarLavagemComoFinalizada(it)
+            }
+        })
         }
 
     }}
@@ -285,38 +305,58 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,cont: Int,larguraDaTela: Dp,ed
 }
 
 @Composable
-fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,editando: MutableState<Boolean>,e: EntidadeRegistroDeMaquinas) {
+fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,
+                          editando: MutableState<Boolean>,
+                          e: EntidadeRegistroDeMaquinas,
+                          coroutineScope: CoroutineScope,
+                          acaoDeMarcarLavagemComoFinalizada:(Int)-> Unit) {
     val finalizado =remember { mutableStateOf(false) }
     val numeroAleatoria = Random.nextInt(-1,1)
+    val dados = Array(5,{remember { mutableStateOf("") }})
+    val lavando =remember { mutableStateOf(false) }
+    LaunchedEffect(Unit){
+        coroutineScope.launch {
+            dados[0].value=async(Dispatchers.IO) {transaction {  e.processo.nome}  }.await()
+            dados[1].value=async(Dispatchers.IO){ transaction{e.tipo.nome } }.await()
+            dados[2].value=async(Dispatchers.IO) { transaction{e.operador.nome}  }.await()
+            dados[3].value =async(Dispatchers.IO) { transaction { e.maquinaUsada.numeroDaMaquina.toString() } }.await()
+
+        }
+    }
+    LaunchedEffect(Unit){
+        coroutineScope.launch {
+            lavando.value=async(Dispatchers.IO) {transaction { e.finalizada }  }.await()
+        }
+    }
     Column(modifier = Modifier.padding(top = 20.dp)) {
         Spacer(Modifier.padding(10.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.padding(3.dp))
         Row(modifier = Modifier.padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("${e.id.value}", modifier = Modifier.width(150.dp))
+            Text(dados[3].value, modifier = Modifier.width(150.dp))
             Spacer(Modifier.padding(3.dp))
-            Text("${e.idProcesso}", modifier = Modifier.widthIn(150.dp))
+            Text(dados[0].value, modifier = Modifier.widthIn(150.dp))
             Spacer(Modifier.padding(3.dp))
             AnimatedVisibility(largura>=1330.dp){
                 Text("${e.peso}", modifier = Modifier.widthIn(150.dp))
                 Spacer(Modifier.padding(3.dp))}
-            Text("10:00", modifier = Modifier.widthIn(150.dp))
+            Text("${e.entrada}", modifier = Modifier.widthIn(150.dp))
             Spacer(Modifier.padding(3.dp))
             AnimatedVisibility(visible = largura>1439.dp){
-                Text("", modifier = Modifier.width(150.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(dados[1].value, modifier = Modifier.width(150.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.padding(3.dp))
             }
 
             AnimatedVisibility(largura>=1330.dp){
-                Text("${e.codOperador}", modifier = Modifier.widthIn(150.dp))
+                Text(dados[2].value, modifier = Modifier.widthIn(150.dp))
                 Spacer(Modifier.padding(3.dp))
             }
-            EstadoDamaquna(finalizado.value)
+            EstadoDamaquna(lavando.value)
             Spacer(Modifier.padding(3.dp))
             FlowRow(){
-                AnimatedVisibility(visible = !finalizado.value){
+                AnimatedVisibility(visible = !lavando.value){
                     OutlinedButton({
-                        finalizado.value=!finalizado.value
+                          acaoDeMarcarLavagemComoFinalizada(e.id.value)
                     }){
                         Icon(
                             painterResource(Res.drawable.chronic_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24)

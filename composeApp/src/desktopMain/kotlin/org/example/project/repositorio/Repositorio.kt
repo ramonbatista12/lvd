@@ -1,6 +1,11 @@
 package org.example.project.repositorio
 
+import org.jetbrains.exposed.v1.javatime.Time
 import org.jetbrains.skia.Data
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.Date
+import java.util.Timer
 
 object Repositorio {
     val conexao = Conecao
@@ -12,6 +17,8 @@ object Repositorio {
 
     suspend fun apagarUmRegistroDeDatas(idData:Int)=conexao.apagarRegistroDeDatas(idData)
     suspend fun quantidadeDeMaquianssAtivas(idData: Int)=conexao.quantidadeDeMaquinasAtivas(idData)
+
+    suspend fun definirRegistroComoFinalizado(idData: Int,dataFinalizacao: LocalDate,horario: LocalTime) =conexao.definirRegitroComoFinalizado(idData,dataFinalizacao,horario)
 
 }
 

@@ -27,6 +27,10 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.Date
+import java.util.Timer
 import kotlin.concurrent.timer
 
 
@@ -147,6 +151,9 @@ object Conecao{
     suspend fun apagarRegistroDeDatas(idData: Int): Boolean=coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.apagarRegistroDeDatas(idData) }.await()
     suspend fun quantidadeDeMaquinasAtivas(idData:Int): Long = coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.contagemDeComclusaoDeMaquinas(idData.toInt()) }.await()
 
+    suspend fun  definirRegitroComoFinalizado(idRegistro: Int,dataFinalizacao: LocalDate,horario: LocalTime) =coroutineScope.async { AdapitadorEntidadeRegistroDeMaquinas.marcarMaquinaComoFinalizada(idRegistro,dataFinalizacao,horario) }.await()
+
+
 }
 
 
@@ -183,10 +190,10 @@ object TabelaDeRegistroDeMaquinas: IdTable<Int>("registro_de_maquinas"){
     override val primaryKey=PrimaryKey(id)
     val codigoDoOperar =integer("id_codigo_usuario").references(TabelaUsuarios.codigoUsuaria)
     val peso = float("peso")
-    val dataFinalizacao =date("dataFinalizacao")
+    val dataFinalizacao =date("dataFinalizacao").nullable()
     val horaEntrada =time("hora_entrada")
-    val horaSaida= time("hora_saida")
-    val finalizada =bool("finalizada")
+    val horaSaida= time("hora_saida").nullable()
+    val finalizada =bool("finalizada").default(false)
     val processo=integer("idProcesso").references(TabelaProcessos.id)
     val maquina =integer("idMaquina").references(TabelaDeMaquinas.id)
     val tipoDeRoupa =integer("idTipo").references(TabelaTipoDeRoupas.id)
@@ -238,9 +245,10 @@ class EntidadeRegistroDeMaquinas(id: EntityID<Int>): Entity<Int>(id){
     var entrada by TabelaDeRegistroDeMaquinas.horaEntrada
     var saida by TabelaDeRegistroDeMaquinas.horaSaida
     var finalizada by TabelaDeRegistroDeMaquinas.finalizada
-    //val tipo by EntidadeTipoDeRoupas referencedOn TabelaTipoDeRoupas.id
-   // val processo by EntidadeTabelaProcesso referencedOn TabelaProcessos.id
-   // val operador by EntidadeUsuarios referencedOn TabelaUsuarios.codigoUsuaria
+    var tipo by EntidadeTipoDeRoupas referencedOn TabelaDeRegistroDeMaquinas.tipoDeRoupa
+    var processo by EntidadeTabelaProcesso referencedOn TabelaDeRegistroDeMaquinas.processo
+    var operador by EntidadeUsuarios referencedOn TabelaDeRegistroDeMaquinas.codigoDoOperar
+    var maquinaUsada by EntidadeTabelaDeMaquinas referencedOn TabelaDeRegistroDeMaquinas.maquina
 }
 
 class EntidadeDataRegistro(id: EntityID<Int>): Entity<Int>(id){
