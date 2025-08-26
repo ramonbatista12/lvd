@@ -22,5 +22,12 @@ fun IconButtonRetorno(acaoDeVoltar:()-> Unit, color: Color=Color.Black){
     }
 }
 
-
+@Composable
+fun IconButtonRetorno(modifier: Modifier= Modifier, acaoDeVoltar:()-> Unit, color: Color=Color.Black){
+    IconButton(onClick = {acaoDeVoltar()}, modifier = modifier){
+        Icon(painter =painterResource(resource = Res.drawable.IconeDeRetorno),
+            contentDescription = "",
+            modifier = Modifier.size(40.dp))
+    }
+}
 

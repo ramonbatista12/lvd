@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.unit.dp
+import org.example.project.componentesComponiveis.IconButtonRetorno
 import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 
 @Composable
@@ -29,6 +30,7 @@ fun PainelRegistroDeMAquinas(modifier: Modifier= Modifier,
     val  apresentacaoPorRegistroEsAberta =remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier= modifier) {
+
     LaunchedEffect(maxWidth){
       System.out.println("largura maxima  $maxWidth")
     }

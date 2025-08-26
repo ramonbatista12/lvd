@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import org.example.project.DestinosDeNavegacao
 import org.example.project.repositorio.Login
 
 import org.example.project.viewModel.ViewModelPrincipal
+import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 
 @Composable
 fun ApresentacoaDoDialogoDeLogin(viewModelPrincipal: ViewModelPrincipal,acaoDeVoutar:()-> Unit){
@@ -81,3 +83,4 @@ fun ApresentacoaDoDialogoDeLogin(viewModelPrincipal: ViewModelPrincipal,acaoDeVo
     }
 
 }
+

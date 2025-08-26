@@ -7,8 +7,13 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.example.project.repositorio.EntidadeRegistroDeMaquinas
 import org.example.project.repositorio.Repositorio
 import org.example.project.repositorio.RespostaDeContagemDeMaquinas
 import java.util.Date
@@ -17,8 +22,18 @@ import kotlin.reflect.KClass
 
 class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewModel(){
  private val vmScope = viewModelScope
- val fluxoDeDatasDeRegistro =repositorio.fluxoDeDatasDeRegistro()
- private val idData= MutableStateFlow<Int>(0)
+  val idData =MutableStateFlow(0)
+ private val fluxoDeMaquinsPorDatas= idData.flatMapLatest {
+     if(it==0) flowOf( emptyList<EntidadeRegistroDeMaquinas>())
+     else fluxoDeregistroDeDados(it)
+ }.stateIn(vmScope, started = SharingStarted.WhileSubscribed(500),emptyList())
+ val _fluxoDeRegistroDeDatas =fluxoDeMaquinsPorDatas
+
+ val fluxoDeMaquinas=repositorio.fluxoDeMaquinas().stateIn(vmScope, SharingStarted.WhileSubscribed(500),emptyList())
+ val fluxoDeProcessos=repositorio.fluxoDeProcessos().stateIn(vmScope, SharingStarted.WhileSubscribed(500),emptyList())
+ val fluxoTiposDeRoupas=repositorio.fluxoTipoDeRoupas().stateIn(vmScope, SharingStarted.WhileSubscribed(500),emptyList())
+ val fluxoDeDatasDeRegistro =repositorio.fluxoDeDatasDeRegistro().stateIn(vmScope, SharingStarted.WhileSubscribed(500),emptyList())
+
 
    suspend fun contagemDeMaquiinasPorIdDaData(id:Int): RespostaDeContagemDeMaquinas{
         try {
@@ -54,14 +69,8 @@ class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewMod
 
     fun fluxoDeregistroDeDados(idData: Int) =   repositorio.fluxoDeregistroPorDatas(idData)
 
-    suspend fun checarData(data: String){
-        val regex ="^(0[1-9]|2[0-9]|3[0-1])/(0[1-9]|1[0-2])/\\d{4}"
-        if(!data.contains(regex)) throw RuntimeException("formato de data nao aseito $data  formato aseito ->$regex ")
-    }
-    suspend fun checarHora(data: String){
-        val regex ="^([0-1][0-9]|2[0-3]):[0-5][0-9]"
-        if(!data.contains(regex)) throw RuntimeException("formato de data nao aseito $data  formato aseito ->$regex ")
-    }
+
+    suspend fun apagarRegistroDeMaquina(idRegistroDeMaquinas: Int)=repositorio.apagarRegistroDeMaquinaPeloId(idRegistroDeMaquinas)
 
 }
 

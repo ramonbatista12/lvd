@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -60,6 +61,9 @@ import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght4
 import lanvanderia.composeapp.generated.resources.edit_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import org.example.project.componentesComponiveis.IconButtonRetorno
 import org.example.project.repositorio.EntidadeRegistroDeMaquinas
+import org.example.project.repositorio.EntidadeTabelaDeMaquinas
+import org.example.project.repositorio.EntidadeTabelaProcesso
+import org.example.project.repositorio.EntidadeTipoDeRoupas
 import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -69,26 +73,34 @@ import kotlin.random.Random
 @Composable
  fun ApresentacaoDoRegistroDeMAquinas(modifier: Modifier= Modifier, larguraDaTela: Dp, telasDoPainel: MutableState<PaginasDoPainel>, vm: ViewModelRegistroDeMaquinas){
     val  editando = remember { mutableStateOf(false) }
-    val fluxoDeMaquinas = vm.fluxoDeregistroDeDados(206).collectAsState(emptyList())
+    val fluxoDeMaquinas = vm._fluxoDeRegistroDeDatas.collectAsState()
+    val fluxoListaMaquinas =vm.fluxoDeMaquinas.collectAsState()
+    val porcessos=vm.fluxoDeProcessos.collectAsState()
+    val tiposdeRoupas =vm.fluxoTiposDeRoupas.collectAsState()
     val coroutineScope =rememberCoroutineScope()
+
 
     Column(modifier= modifier.fillMaxWidth().fillMaxHeight().padding(start = 30.dp, top = 4.dp)) {
         IconButtonRetorno({
             telasDoPainel.value= PaginasDoPainel.ListaDeRegistros
         })
         Spacer(modifier.padding(4.dp))
-        ColetarDados(Modifier.padding(start = 4.dp),editando)
+        ColetarDados(Modifier.padding(start = 4.dp),
+                     editando,
+                    listaDeMaquinas = fluxoListaMaquinas.value,
+                    processos = porcessos.value,tiposdeRoupas.value)
         Row (modifier = Modifier.padding(bottom = 5.dp, start = 5.dp)){
             //  RegistroDeMaquinas(Modifier.padding(10.dp))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                ListaDeRegistros(Modifier.height(500.dp).fillMaxWidth(0.95f),
+                ListaDeRegistros(Modifier.fillMaxHeight().fillMaxWidth(0.95f).padding(bottom = 10.dp),
                                  100,
                                  larguraDaTela,
                                  editando,
                                 fluxoDeMaquinas.value,
                                  coroutineScope,
-                    {})
+                    {},
+                    {vm.apagarRegistroDeMaquina(it)})
             }
         }
 
@@ -100,7 +112,11 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ColetarDados(modifier: Modifier= Modifier, editando: MutableState<Boolean>){
+fun ColetarDados(modifier: Modifier= Modifier,
+                 editando: MutableState<Boolean>,
+                 listaDeMaquinas: List<EntidadeTabelaDeMaquinas>,
+                 processos:List<EntidadeTabelaProcesso>,
+                 tipoDeRoupas: List<EntidadeTipoDeRoupas>){
     val estadoTextiFildPeso=rememberTextFieldState()
     val estadoTextiFildProcesso=rememberTextFieldState()
     val estadoTextiFildCodigoOperador=rememberTextFieldState()
@@ -117,21 +133,11 @@ fun ColetarDados(modifier: Modifier= Modifier, editando: MutableState<Boolean>){
             }){
                 OutlinedTextField(state = estadoTextiFildMAquina, label = {Text("Maquina")})
                 ExposedDropdownMenu(expanded = opcoesDeMAquinas.value, onDismissRequest = {opcoesDeMAquinas.value=!opcoesDeMAquinas.value}){
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Maquina 1")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Maquina 2")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Maquina 3")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Maquina 4")
-
+                    listaDeMaquinas.forEach {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text("Maquina numero ${it.numeroDaMaquina}    ")
+                            Text("Peso  ${it.pesoMinimo}...${it.pesoMasimo}")
+                        }
                     }
                 }
             }
@@ -142,38 +148,13 @@ fun ColetarDados(modifier: Modifier= Modifier, editando: MutableState<Boolean>){
             ExposedDropdownMenuBox(expanded = opcoesDeProcesso.value,{opcoesDeProcesso.value=!opcoesDeProcesso.value}){
                 OutlinedTextField(state = estadoTextiFildProcesso, label = {Text("Digite o Processo")})
                 ExposedDropdownMenu(expanded = opcoesDeProcesso.value,{opcoesDeProcesso.value=!opcoesDeProcesso.value}){
+                   processos.forEach {
                     Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Campo pesado processo 1")
+                        Text("process:${it.nome} ")
+                        Text(" numero:${it.numero}")
 
                     }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Relave de roupas  2")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Lencoes pesados processo  3")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Roupas Leves processo 4")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Cobertore processo 5")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Panos de chao processo 6")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Fibras processo 7")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Enchague processo 8")
-
-                    }
+                }
                 }
             }
 
@@ -185,40 +166,14 @@ fun ColetarDados(modifier: Modifier= Modifier, editando: MutableState<Boolean>){
                                    onExpandedChange = {opcoesTipoDeroupaEstaAberta.value=!opcoesTipoDeroupaEstaAberta.value}){
                 OutlinedTextField(state = estadoTextiFildCodigoOperador, label = {Text("Tipo De Roupa")})
                 ExposedDropdownMenu(expanded = opcoesTipoDeroupaEstaAberta.value,{opcoesTipoDeroupaEstaAberta.value=!opcoesTipoDeroupaEstaAberta.value}){
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("FIbras")
+                     tipoDeRoupas.forEach {
+                      Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
+                        Text("${it.nome}")
 
                     }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Campo Cirugirco")
+                     }
 
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Conjunto")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Cobertor")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Pano de Chao")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Jales")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("Parceiros votuporanga")
-
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = {})) {
-                        Text("FIbras Parceiros votuporanga")
-
-                    }
-                }
-            }
+            }}
             Spacer(Modifier.padding(10.dp))
             AnimatedVisibility(visible = editando.value){
 
@@ -276,7 +231,8 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,
                      editando: MutableState<Boolean>,
                      listaDeMaquinas: List<EntidadeRegistroDeMaquinas>,
                      coroutineScope: CoroutineScope,
-                     acaoDeMarcarLavagemComoFinalizada:suspend (Int) -> Unit){
+                     acaoDeMarcarLavagemComoFinalizada:suspend (Int) -> Unit,
+                     acoaoDeApagarRegistro:suspend (Int)-> Unit){
    AnimatedVisibility(visible = larguraDaTela>1015.dp){
     LazyColumn(modifier.border(width = if(larguraDaTela>1015.dp) 1.dp else 0.dp, color = Color.LightGray, shape = RoundedCornerShape(5.dp))) {
         stickyHeader {
@@ -289,7 +245,8 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,
             coroutineScope.launch {
                 acaoDeMarcarLavagemComoFinalizada(it)
             }
-        })
+        },
+            {coroutineScope.launch { acoaoDeApagarRegistro(it) }}  )
         }
 
     }}
@@ -297,8 +254,8 @@ fun ListaDeRegistros(modifier: Modifier= Modifier,
 
 
     LazyColumn(modifier) {
-        items(cont){
-            ItemDaListaCompacto(editando)
+        items(listaDeMaquinas){
+            ItemDaListaCompacto(editando,it,coroutineScope)
         }
     }
     }
@@ -309,7 +266,8 @@ fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,
                           editando: MutableState<Boolean>,
                           e: EntidadeRegistroDeMaquinas,
                           coroutineScope: CoroutineScope,
-                          acaoDeMarcarLavagemComoFinalizada:(Int)-> Unit) {
+                          acaoDeMarcarLavagemComoFinalizada:(Int)-> Unit,
+                          acaoDeApagarRegistro:(Int)->Unit) {
     val finalizado =remember { mutableStateOf(false) }
     val numeroAleatoria = Random.nextInt(-1,1)
     val dados = Array(5,{remember { mutableStateOf("") }})
@@ -372,7 +330,7 @@ fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,
                 }
 
                 Spacer(Modifier.padding(3.dp))
-                OutlinedButton({}){
+                OutlinedButton({acaoDeApagarRegistro(e.id.value)}){
                     Icon(
                         painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24)
                         ,"Exclui", modifier = Modifier.size(20.dp))
@@ -386,9 +344,23 @@ fun ItemDaListaDeMaquinas(numerosDeCampos:Int,largura: Dp,
 }
 
 @Composable
-fun ItemDaListaCompacto(editando: MutableState<Boolean>) {
+fun ItemDaListaCompacto(editando: MutableState<Boolean>,
+                        e: EntidadeRegistroDeMaquinas,
+                        coroutineScope: CoroutineScope
+                        ) {
     val finalizado = remember { mutableStateOf(false) }
     val numeroAleatoria = Random.nextInt(-1, 1)
+    val dados = Array(size = 5,{remember { mutableStateOf("") }})
+    LaunchedEffect(Unit){
+        finalizado.value=async { transaction { e.finalizada } }.await()
+    }
+    LaunchedEffect(Unit){
+        coroutineScope.launch {
+            dados[0].value=async(Dispatchers.IO) {transaction {  e.processo.nome}  }.await()
+            dados[1].value=async(Dispatchers.IO){ transaction{e.tipo.nome } }.await()
+            dados[2].value=async(Dispatchers.IO) { transaction{e.operador.nome}  }.await()
+            dados[3].value =async(Dispatchers.IO) { transaction { e.maquinaUsada.numeroDaMaquina.toString() } }.await()}
+    }
     OutlinedCard(modifier = Modifier.padding(top = 20.dp).height(190.dp)) {
         Box(Modifier.fillMaxSize()) {
             Box(
@@ -405,7 +377,7 @@ fun ItemDaListaCompacto(editando: MutableState<Boolean>) {
                          visible = finalizado.value,
 
                  ) {
-                 Text(text = "Finalizado as 11:00", color = Color.White)
+                 Text(text = "Finalizado as ${e.saida}", color = Color.White)
              }
              }
 
@@ -418,19 +390,19 @@ fun ItemDaListaCompacto(editando: MutableState<Boolean>) {
                 Row {
                     Text("Maquina",)
                     Spacer(Modifier.padding(end = 30.dp))
-                    Text("1", )
+                    Text(dados[3].value, )
                     Spacer(Modifier.padding(end = 30.dp))
                     Text("Processo :")
                     Spacer(Modifier.padding(end = 3.dp))
-                     Text("5", modifier = Modifier)
+                     Text(dados[0].value, modifier = Modifier)
                     Spacer(Modifier.padding(end = 30.dp))
                     Text("Peso :")
                     Spacer(Modifier.padding(end = 3.dp))
-                    Text("105,0", modifier = Modifier)
+                    Text(e.peso.toString(), modifier = Modifier)
                     Spacer(Modifier.padding(end = 30.dp))
                     Text("Roupa :")
                     Spacer(Modifier.padding(end = 3.dp))
-                    Text("Campo Cirugirco", modifier = Modifier)
+                    Text(dados[1].value, modifier = Modifier)
 
 
                 }
@@ -438,11 +410,11 @@ fun ItemDaListaCompacto(editando: MutableState<Boolean>) {
                 Row {
                     Text("Hora entrada :")
                     Spacer(Modifier.padding(end = 3.dp))
-                    Text("10:00", )
+                    Text(e.entrada.toString(), )
                     Spacer(modifier = Modifier.padding(end = 30.dp))
-                    Text("Codigo operador :")
+                    Text("Operador :")
                     Spacer(Modifier.padding(end = 30.dp))
-                    Text("6000",)
+                    Text(dados[2].value,)
                 }
 
 
@@ -536,7 +508,7 @@ fun CabesalhoDaListaDeMaquinas(maxwith: Dp) {
 
             Spacer(modifier = Modifier.padding(3.dp))
             AnimatedVisibility(visible = maxwith>=1330.dp)  {
-                ItemDeCabesalho("Cod operador", Modifier.widthIn(150.dp))
+                ItemDeCabesalho("Operador", Modifier.widthIn(150.dp))
                 Spacer(modifier = Modifier.padding(3.dp))
             }
             ItemDeCabesalho("Estado", Modifier.widthIn(150.dp))

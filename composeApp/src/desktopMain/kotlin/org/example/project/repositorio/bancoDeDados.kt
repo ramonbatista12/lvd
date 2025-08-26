@@ -144,13 +144,15 @@ object Conecao{
         }
    return Login.Erro
     }
-
-    fun fluxoDeDatas()= AdapitadorEntidadeDatasDeRegistro.fluxoPaginadoDeDatasDeRegistroDeMaquinas
-    fun fluxoDeRegistroDeDatasPorId(idData: Int)= AdapitadorEntidadeRegistroDeMaquinas.fluxoDeMaquinasProDatas(idData)
+    fun fluxoDeMaquinas()= AdapitadorEntidadeMauinas.fluxoDeMaquinas()
+    fun fluxoDeDatas()= AdapitadorEntidadeDatasDeRegistro.fluxoDeDatas()
+    fun fluxoDeprocessos()= AdapitadorEntidadeProcessos.fluxoDeProsessos()
+    fun fluxoDeTiposDeRoupas()= AdapitadorEntidadeTiposDeRoupas.fluxoTipoDeRoupa()
+    fun fluxoDeRegistroDeDatasPorId(idData: Int)= AdapitadorEntidadeRegistroDeMaquinas.fluxoDeMaquinaProDatas(idData)
     suspend fun contagemDeMaquinasPorIdDaData(idData: Int): Int= coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.contagemDeMaquinasPorIdDaData(idData) }.await()
     suspend fun apagarRegistroDeDatas(idData: Int): Boolean=coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.apagarRegistroDeDatas(idData) }.await()
     suspend fun quantidadeDeMaquinasAtivas(idData:Int): Long = coroutineScope.async { AdapitadorEntidadeDatasDeRegistro.contagemDeComclusaoDeMaquinas(idData.toInt()) }.await()
-
+    suspend fun  apagarRegistroDeMaquia(idRegistro: Int)= coroutineScope.async { AdapitadorEntidadeRegistroDeMaquinas.apagarRegistroDeMaquna(idRegistro) }.await()
     suspend fun  definirRegitroComoFinalizado(idRegistro: Int,dataFinalizacao: LocalDate,horario: LocalTime) =coroutineScope.async { AdapitadorEntidadeRegistroDeMaquinas.marcarMaquinaComoFinalizada(idRegistro,dataFinalizacao,horario) }.await()
 
 
