@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,12 +11,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.example.project.repositorio.EntidadeRegistroDeMaquinas
 import org.example.project.repositorio.Repositorio
 import org.example.project.repositorio.RespostaDeContagemDeMaquinas
-import java.util.Date
-import java.util.Timer
 import kotlin.reflect.KClass
 
 class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewModel(){
@@ -71,7 +67,23 @@ class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewMod
 
 
     suspend fun apagarRegistroDeMaquina(idRegistroDeMaquinas: Int)=repositorio.apagarRegistroDeMaquinaPeloId(idRegistroDeMaquinas)
+    suspend fun validar(charArray: CharArray): String{
+        val stringBuilder = StringBuilder()
+        var contDigits=0
+         for(c in 0..charArray.size-1){
 
+
+             if(charArray[c].isDigit() ){
+                 stringBuilder.append(charArray[c])
+                 contDigits++
+                 if(contDigits==2||contDigits==4)stringBuilder.append('/')
+             }
+             if(contDigits==8)break
+
+
+         }
+      return  stringBuilder.toString()
+    }
 }
 
 

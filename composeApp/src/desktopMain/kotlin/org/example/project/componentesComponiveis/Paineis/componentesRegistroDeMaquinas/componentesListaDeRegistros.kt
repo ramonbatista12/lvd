@@ -28,11 +28,14 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
@@ -45,21 +48,26 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import lanvanderia.composeapp.generated.resources.Res
 import lanvanderia.composeapp.generated.resources.add_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
+import org.example.project.componentesComponiveis.EntradaDeTextoBaraPesquiFormatoDeData
 import org.example.project.repositorio.EntidadeDataRegistro
 import org.example.project.repositorio.RespostaDeContagemDeMaquinas
 import org.example.project.viewModel.ViewModelRegistroDeMaquinas
@@ -79,8 +87,9 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
     val fluxoDeDatas =vm.fluxoDeDatasDeRegistro.collectAsState(emptyList())
     val filtragen =remember { mutableStateOf("") }
     val  opicoesDeFiltragen =remember { mutableStateOf(false) }
-    val pesquisa =remember { mutableStateOf("") }
+    val pesquisa =rememberTextFieldState("")
     val  pesquisaAberta =remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope ()
 
 
     Column(modifier=modifier.fillMaxSize().padding(bottom = 20.dp, start = 20.dp, end = 20.dp)) {
@@ -90,22 +99,20 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
                                      .width( 900.dp)
                                      .padding(end = 20.dp)
                                      .align(Alignment.CenterHorizontally),
-            inputField = {
-                SearchBarDefaults.InputField(query = pesquisa.value,
-                    onQueryChange = {pesquisa.value=it},
-                    onSearch = {},
-                    onExpandedChange = {pesquisaAberta.value=it},
-                    expanded = pesquisaAberta.value,
-                    leadingIcon = {
-                        Icon(painter = painterResource(Res.drawable.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
-                            contentDescription = "",
-                            modifier = Modifier.clickable(onClick = { pesquisaAberta.value=false}) )},
-                    trailingIcon = {
-                        Icon(painter = painterResource(Res.drawable.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
-                            contentDescription = "",
-                            modifier = Modifier.clickable(onClick = { pesquisaAberta.value=false}) )
-                    } )
-            },
+            inputField = { EntradaDeTextoBaraPesquiFormatoDeData(expandido = pesquisaAberta.value,
+                                                                 acaoDeExpandir = { pesquisaAberta.value=it },
+                                                                 iconePesquisa = {Icon(modifier = it, painter = painterResource(
+                                                                     Res.drawable.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
+                                                                 iconeDeFiltro = {Icon(modifier = it,painter = painterResource(
+                                                                     Res.drawable.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
+                                                                 iconeDeClose = {it,calbac->
+                                                                     Icon(modifier = it.clickable(onClick = {
+                                                                                              calbac()
+                                                                                              pesquisaAberta.value=false
+
+                                                                           }),painter = painterResource(Res.drawable.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
+                                                                                      contentDescription = "",
+                                                                              )} ) },
             expanded = pesquisaAberta.value,
             onExpandedChange = {pesquisaAberta.value=it},
             colors = SearchBarDefaults.colors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,),
