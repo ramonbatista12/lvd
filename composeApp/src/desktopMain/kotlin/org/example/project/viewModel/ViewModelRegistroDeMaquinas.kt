@@ -7,20 +7,25 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.example.project.repositorio.EntidadeRegistroDeMaquinas
+import org.example.project.repositorio.RegistroDeMaquinasPorId
 import org.example.project.repositorio.Repositorio
 import org.example.project.repositorio.RespostaDeContagemDeMaquinas
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlin.reflect.KClass
 
 class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewModel(){
  private val vmScope = viewModelScope
   val idData =MutableStateFlow(0)
  private val fluxoDeMaquinsPorDatas= idData.flatMapLatest {
-     if(it==0) flowOf( emptyList<EntidadeRegistroDeMaquinas>())
+     if(it==0) flowOf( emptyList<RegistroDeMaquinasPorId>())
      else fluxoDeregistroDeDados(it)
  }.stateIn(vmScope, started = SharingStarted.WhileSubscribed(500),emptyList())
  val _fluxoDeRegistroDeDatas =fluxoDeMaquinsPorDatas
@@ -57,9 +62,10 @@ class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewMod
 
     suspend fun contarQuantidadeDeMaquinasAtivas(idData: Int) =vmScope.async {   repositorio.quantidadeDeMaquianssAtivas(idData)}.await()
 
-    suspend fun maecarRegistroComoFinalizado(idRegistroDeMaquinas: Int,dataFinalizacao: String,horaFinalizacao: String){
+    suspend fun maecarRegistroComoFinalizado(idRegistroDeMaquinas: Int){
         vmScope.launch {
-
+            System.out.println("id do registro chamado no view model para definir como finalizado")
+              repositorio.definirRegistroComoFinalizado(idRegistroDeMaquinas, LocalDate.now(), LocalTime.now())
         }
     }
 
@@ -67,23 +73,35 @@ class ViewModelRegistroDeMaquinas(private val repositorio: Repositorio): ViewMod
 
 
     suspend fun apagarRegistroDeMaquina(idRegistroDeMaquinas: Int)=repositorio.apagarRegistroDeMaquinaPeloId(idRegistroDeMaquinas)
-    suspend fun validar(charArray: CharArray): String{
-        val stringBuilder = StringBuilder()
-        var contDigits=0
-         for(c in 0..charArray.size-1){
 
-
-             if(charArray[c].isDigit() ){
-                 stringBuilder.append(charArray[c])
-                 contDigits++
-                 if(contDigits==2||contDigits==4)stringBuilder.append('/')
-             }
-             if(contDigits==8)break
-
-
-         }
-      return  stringBuilder.toString()
+    suspend fun criarData(dataNaoFormatada: String): LocalDate {
+        val formatacao = DateTimeFormatter.ofPattern("ddMMyyyy")
+        val localDate = LocalDate.parse(dataNaoFormatada,formatacao)
+        System.out.println("data feita no viewmodel ${localDate.toString()}")
+     return localDate
     }
+    suspend fun adicionarDataAoBancoDeDados(localDate: LocalDate) =vmScope.async { repositorio.criarNovaData(localDate) }.await()
+    suspend fun criarEAdicinarDataNoBancoDeDados(dataNaoFormatada: String): Int{
+           val localDate=  criarData(dataNaoFormatada)
+           val  entidade =adicionarDataAoBancoDeDados(localDate)
+        System.out.println("ultimo oid adicionado na tabela datas de registro ${entidade.id_data.value}")
+
+    return entidade.id_data.value
+    }
+    suspend fun adicionarRegistroAoBancoDeDados(peso:String,idMaquina:Int,idDoTipo:Int,idProcesso:Int,codigoOperador:Int){
+
+         repositorio.adicionarRegistroDeMaquinasAoBAncoDeDados(idData=idData.value,
+                                                               peso = peso.toFloat(),
+                                                               idProcesso = idProcesso,
+                                                               idTipo = idDoTipo,
+                                                               codOpera = codigoOperador,
+                                                               idMaquina = idMaquina,
+                                                               hora = LocalTime.now())
+    }
+    suspend fun editarRegistro(idData:Int,peso:String,idMaquina:Int,idDoTipo:Int,idProcesso:Int,codigoHoperador:Int,dataSaida:String?,horaFinalizacao: String?){
+
+    }
+
 }
 
 

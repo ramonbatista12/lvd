@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,25 +16,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.TextField
-import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
@@ -49,31 +39,32 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
 import lanvanderia.composeapp.generated.resources.Res
-import lanvanderia.composeapp.generated.resources.add_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
 import lanvanderia.composeapp.generated.resources.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24
-import org.example.project.componentesComponiveis.EntradaDeTextoBaraPesquiFormatoDeData
+import org.example.project.componentesComponiveis.ApresentacaoDialogoCriarNovaData
+import org.example.project.componentesComponiveis.EntradaDeTextoBaraPesquiPorFiltro
+import org.example.project.componentesComponiveis.Paineis.componentesRegistroDeMaquinas.EstadoFiltroPesquisa.Data
+import org.example.project.componentesComponiveis.Paineis.componentesRegistroDeMaquinas.EstadoFiltroPesquisa.Id
+import org.example.project.componentesComponiveis.Paineis.componentesRegistroDeMaquinas.EstadoFiltroPesquisa.QuantidadeDeMaquinas
+import org.example.project.repositorio.DataDeRegistro
 import org.example.project.repositorio.EntidadeDataRegistro
 import org.example.project.repositorio.RespostaDeContagemDeMaquinas
+import org.example.project.viewModel.DataRegistro
 import org.example.project.viewModel.ViewModelRegistroDeMaquinas
 import org.jetbrains.compose.resources.painterResource
-import java.time.LocalDate
-import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -90,37 +81,15 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
     val pesquisa =rememberTextFieldState("")
     val  pesquisaAberta =remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope ()
-
+    val criarNovaData =remember { mutableStateOf(false) }
 
     Column(modifier=modifier.fillMaxSize().padding(bottom = 20.dp, start = 20.dp, end = 20.dp)) {
 
-        SearchBar(modifier = Modifier.border(width = 1.dp,androidx.compose.material3.MaterialTheme.colorScheme.onSurface, shape = RoundedCornerShape(5.dp))
-                                     .heightIn(min = 50.dp)
-                                     .width( 900.dp)
-                                     .padding(end = 20.dp)
-                                     .align(Alignment.CenterHorizontally),
-            inputField = { EntradaDeTextoBaraPesquiFormatoDeData(expandido = pesquisaAberta.value,
-                                                                 acaoDeExpandir = { pesquisaAberta.value=it },
-                                                                 iconePesquisa = {Icon(modifier = it, painter = painterResource(
-                                                                     Res.drawable.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
-                                                                 iconeDeFiltro = {Icon(modifier = it,painter = painterResource(
-                                                                     Res.drawable.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
-                                                                 iconeDeClose = {it,calbac->
-                                                                     Icon(modifier = it.clickable(onClick = {
-                                                                                              calbac()
-                                                                                              pesquisaAberta.value=false
-
-                                                                           }),painter = painterResource(Res.drawable.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
-                                                                                      contentDescription = "",
-                                                                              )} ) },
-            expanded = pesquisaAberta.value,
-            onExpandedChange = {pesquisaAberta.value=it},
-            colors = SearchBarDefaults.colors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,),
-            shape = RoundedCornerShape(5.dp)){}
+    BaraDePesquisa(modifier= Modifier.align(Alignment.CenterHorizontally), vm = vm)
 
       Box(modifier= Modifier.align(Alignment.CenterHorizontally)){
-          Row(Modifier.align(Alignment.TopStart).width(900.dp).padding(bottom =  50.dp, top = 20.dp), verticalAlignment = Alignment.CenterVertically){
-              ExposedDropdownMenuBox(expanded = opicoesDeFiltragen.value,{opicoesDeFiltragen.value=!opicoesDeFiltragen.value}){
+          Row(Modifier.align(Alignment.TopStart).width(900.dp).padding(bottom =  5.dp, top = 20.dp), verticalAlignment = Alignment.CenterVertically){
+             /* ExposedDropdownMenuBox(expanded = opicoesDeFiltragen.value,{opicoesDeFiltragen.value=!opicoesDeFiltragen.value}){
                OutlinedTextField(value = filtragen.value,{filtragen.value=it}, label = {Text("Opcoes de filtro de lista")})
               DropdownMenu(expanded = opicoesDeFiltragen.value, onDismissRequest = {opicoesDeFiltragen.value=!opicoesDeFiltragen.value}){
                   Row(modifier = Modifier.padding(top = 5.dp, bottom = 5.dp, start = 3.dp)) {
@@ -136,9 +105,11 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
                   Row(modifier = Modifier.padding(top = 5.dp, bottom = 5.dp, start = 3.dp)) {
                       Text("Por mais antigos", Modifier.clickable(onClick = {}))}
 
-              }}
+              }}*/
 
-              androidx.compose.material.Button(onClick = {}, Modifier.padding(start = 10.dp, end = 10.dp)){
+              androidx.compose.material.Button(onClick = {
+                  criarNovaData.value=true
+              }, Modifier.padding(start = 0.dp, end = 10.dp)){
 
                   Text(" Novo Registro")
               }
@@ -171,9 +142,9 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
 
                 ItemRegistro(onClick = {
                     System.out.println()
-                    vm.idData.value=it.id.value
+                    vm.idData.value=it.id
                     telasInterna.value= PaginasDoPainel.VisualizacaoDoRegidtro(0)
-                }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id.value)},
+                }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id)},
                     data = it, acaoDeApagarUmRegistro = {
                         vm.apagarUmRegistroDeDatas(it,
                             calbackDeEscluasao = {
@@ -191,9 +162,9 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
                     val visivel =remember { mutableStateOf(true) }
                     if(it!=null)
                  ItemRegistroCompat(acao = {
-                       vm.idData.value= it.id.value
+                       vm.idData.value= it.id
                        telasInterna.value= PaginasDoPainel.VisualizacaoDoRegidtro(0)
-                   }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id.value)},
+                   }, acaoDeContagem = {vm.contagemDeMaquiinasPorIdDaData(it.id)},
                        data = it,
                        acaoDeApagarUmRegistro = {
                            vm.apagarUmRegistroDeDatas(it,{
@@ -206,32 +177,57 @@ fun ApresentacaoListaDeRegistros(modifier: Modifier = Modifier,
 
             }
             }
+
+        ApresentacaoDialogoCriarNovaData(criarNovaData,vm,{telasInterna.value= PaginasDoPainel.VisualizacaoDoRegidtro(0)})
         }
     }
 
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BaraDePesquisa(modifier: Modifier= Modifier){
-    val estadoPesquisa =rememberTextFieldState()
-    Box(modifier= Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier.fillMaxWidth()
-                .align(Alignment.CenterEnd)
-                .padding(end = 10.dp, bottom = 10.dp)){
-            OutlinedTextField(state = estadoPesquisa, Modifier ,label =
-                {Text("Pesquisa")
-                }, shape = RoundedCornerShape(20.dp),
-                leadingIcon = {Icon(painter = painterResource(Res.drawable.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
-                    contentDescription = "")},
-                lineLimits = TextFieldLineLimits.SingleLine)
+fun BaraDePesquisa(modifier: Modifier= Modifier,vm: ViewModelRegistroDeMaquinas){
+    val  opicoesDeFiltragen =remember { mutableStateOf(false) }
+
+    val  pesquisaAberta =remember { mutableStateOf(false) }
+    val filtroDePesquisaSelelcionado=rememberFiltroSelelcionado()
+    val coroutineScope = rememberCoroutineScope ()
+    val pesquisa =rememberTextFieldState("")
+    val stadoFiltro =rememberFiltroSelelcionado()
+    SearchBar(modifier = modifier.border(width = 1.dp,androidx.compose.material3.MaterialTheme.colorScheme.onSurface, shape = RoundedCornerShape(5.dp))
+        .heightIn(min = 50.dp)
+        .width( 900.dp)
+        .padding(end = 20.dp, start = 20.dp),
+
+        inputField = {EntradaDeTextoBaraPesquiPorFiltro( filtroDePesquisaSelelcionado=filtroDePesquisaSelelcionado,
+                                                         textFildState = pesquisa,
+                                                         expandido = pesquisaAberta.value,
+                                                         acaoDeExpandir = { pesquisaAberta.value=it },
+                                                         iconePesquisa = {Icon(modifier = it, painter = painterResource(
+                                                             Res.drawable.search_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
+                                                         iconeDeFiltro = {Icon(modifier = it,painter = painterResource(
+                                                             Res.drawable.filter_list_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24), contentDescription = "")},
+                                                         iconeDeClose = {it,calbac->
+                                                             Icon(modifier = it.clickable(onClick = {
+                                                                pesquisa.clearText()
+                                                                 pesquisaAberta.value=false
+
+                                                             }),painter = painterResource(Res.drawable.close_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
+                                                                 contentDescription = "",
+                                                             )} ,
+                                                         acaoDePesquisa = {
+                                                             System.out.println("acao de pesquisa acontecendo $it")
+                                                         }    )
 
 
-            Spacer(Modifier.padding(10.dp))
+             },
+        expanded = pesquisaAberta.value,
+        onExpandedChange = {pesquisaAberta.value=it},
+        colors = SearchBarDefaults.colors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,),
+        shape = RoundedCornerShape(5.dp)){
 
-        }        }
+         }
 }
 @Composable
 fun CabesalhoRegistros(){
@@ -278,16 +274,18 @@ fun CabesalhoRegistros(){
 @Composable
 fun ItemRegistro(onClick: () -> Unit,
                  acaoDeContagem:suspend () -> RespostaDeContagemDeMaquinas,
-                 data: EntidadeDataRegistro,
+                 data: DataDeRegistro,
                  acaoDeApagarUmRegistro: (Int) -> Unit,
                  acaoChecagemConclusaoDasMaquinas:suspend (Int)->Int){
     val contagem =remember { mutableStateOf<RespostaDeContagemDeMaquinas>(RespostaDeContagemDeMaquinas.Load) }
-    val maquinasConcluidas =remember { mutableStateOf(true) }
-    LaunchedEffect(Unit){
+    val maquinasPendentes =remember { mutableStateOf(true) }
+
+
+    LaunchedEffect(data){
         contagem.value =acaoDeContagem()
     }
-    LaunchedEffect(Unit){
-        maquinasConcluidas.value =if (acaoChecagemConclusaoDasMaquinas(data.id.value) >0) false else true
+    LaunchedEffect(data.id){
+        maquinasPendentes.value = (acaoChecagemConclusaoDasMaquinas(data.id) >0)
     }
     Column (Modifier.width(900.dp).clickable(onClick=onClick)) {
         HorizontalDivider()
@@ -303,14 +301,14 @@ fun ItemRegistro(onClick: () -> Unit,
 
             Row(Modifier.width(150.dp)) {
 
-                Text("${data.data}")
+                Text("${data.dataRegistro.dataFormatada()}")
             }
             Spacer(Modifier.padding(3.dp))
             Row(Modifier.width(150.dp)) {
                 Text("${contagem.value.toString()}")}
             Spacer(Modifier.padding(3.dp))
-            EstadoRegistro(comcluidas = maquinasConcluidas.value)
-            OutlinedIconButton({acaoDeApagarUmRegistro(data.id.value)}){
+            EstadoRegistro(pendentes = maquinasPendentes.value)
+            OutlinedIconButton({acaoDeApagarUmRegistro(data.id)}){
                 Icon(painter = painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),
                     contentDescription = "apagar registro",
                     Modifier.size(20.dp))
@@ -325,16 +323,18 @@ fun ItemRegistro(onClick: () -> Unit,
 @Composable
 fun ItemRegistroCompat(acao:()-> Unit,
                        acaoDeContagem: suspend () -> RespostaDeContagemDeMaquinas,
-                       data: EntidadeDataRegistro,
+                       data: DataDeRegistro,
                        acaoDeApagarUmRegistro:(Int)-> Unit,
                        acoaDeContagemDeMaquinasativas:suspend (Int)->Int){
     val maquinasConcluidas = remember { mutableStateOf(false) }
     val contagenDeMaquinas = remember { mutableStateOf<RespostaDeContagemDeMaquinas>(RespostaDeContagemDeMaquinas.Load) }
-    LaunchedEffect(Unit){
+    LaunchedEffect(data.id){
        contagenDeMaquinas.value= acaoDeContagem()
     }
-    LaunchedEffect(Unit){
-        maquinasConcluidas.value = if(acoaDeContagemDeMaquinasativas(data.id.value)>=0)false else true
+    LaunchedEffect(data.id){
+        val contagem =acoaDeContagemDeMaquinasativas(data.id)
+        maquinasConcluidas.value = if(contagem>=0)false else true
+        System.out.println("contagen para id =${data.id} cont:${contagem} , maquinas comcluidas ${maquinasConcluidas.value}")
     }
     OutlinedCard(modifier = Modifier.width(600.dp)
                                     .height(190.dp)
@@ -361,7 +361,7 @@ fun ItemRegistroCompat(acao:()-> Unit,
                 Row {
                     Text(text = "Data :")
                     Spacer(modifier = Modifier.padding( 3.dp))
-                    Text("${data.data}")
+                    Text("${data.dataRegistro.dataFormatada()}")
                 }
                 Spacer(Modifier.padding(5.dp))
                 Row {
@@ -372,7 +372,7 @@ fun ItemRegistroCompat(acao:()-> Unit,
                 }
             }
             Row(Modifier.align(Alignment.BottomEnd).padding(end = 5.dp, bottom = 10.dp)) {
-                OutlinedIconButton({acaoDeApagarUmRegistro(data.id.value)}){
+                OutlinedIconButton({acaoDeApagarUmRegistro(data.id)}){
                     Icon(painter = painterResource(Res.drawable.delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24),""
                          , modifier = Modifier.size(20.dp))
                 }
@@ -383,11 +383,11 @@ fun ItemRegistroCompat(acao:()-> Unit,
     }
 }
 @Composable
-fun EstadoRegistro(comcluidas: Boolean){
-    val estado = remember { mutableStateOf(Random.nextInt(1,5)) }
-    val color = if(!comcluidas) Color.Red
+fun EstadoRegistro(pendentes: Boolean){
+
+    val color = if(pendentes) Color.Red
     else Color.Green
-    val text =if(!comcluidas)"Existem maquinas pendentes "
+    val text =if(pendentes)"Existem maquinas pendentes "
     else "Todas as maquinas foram comcluidas"
     Row(modifier = Modifier.width(290.dp)) {
         Box(modifier = Modifier.clip(CircleShape).size(20.dp).background(color=color))
@@ -395,6 +395,48 @@ fun EstadoRegistro(comcluidas: Boolean){
         Text(text = text)
     }
 }
+
+@Composable
+fun rememberFiltroSelelcionado(inicial: EstadoFiltroPesquisa)= rememberSaveable(FiltroDePesquisaSelelcionado.saver){
+    FiltroDePesquisaSelelcionado(inicial)
+}
+@Composable
+fun rememberFiltroSelelcionado()= rememberSaveable(FiltroDePesquisaSelelcionado.saver){
+    FiltroDePesquisaSelelcionado(EstadoFiltroPesquisa.Data)
+}
+class FiltroDePesquisaSelelcionado(val inicial : EstadoFiltroPesquisa){
+    val estado= MutableStateFlow<EstadoFiltroPesquisa>(inicial)
+    fun setStado(stado: EstadoFiltroPesquisa){
+        estado.value= estado as EstadoFiltroPesquisa
+    }
+    companion object{
+        val saver =object : Saver<FiltroDePesquisaSelelcionado, String>{
+            override fun restore(value: String): FiltroDePesquisaSelelcionado? {
+                return when(value){
+                    "1" -> FiltroDePesquisaSelelcionado( Data)
+                    "2" -> FiltroDePesquisaSelelcionado( QuantidadeDeMaquinas)
+                    "3" -> FiltroDePesquisaSelelcionado(Id)
+                    else -> throw IllegalStateException("valor salvo nao representa nenum dos indices originais")
+                }
+            }
+
+            override fun SaverScope.save(value: FiltroDePesquisaSelelcionado): String? {
+                return value.estado.value.indice
+            }
+        }
+    }
+}
+
+
+sealed class EstadoFiltroPesquisa(val indice:String){
+    object Data: EstadoFiltroPesquisa("1")
+    object QuantidadeDeMaquinas: EstadoFiltroPesquisa("2")
+    object Id: EstadoFiltroPesquisa("3")
+
+}
+
+
+
 /*
 *
 
